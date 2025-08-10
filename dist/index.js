@@ -1,52 +1,14 @@
-"use strict";
-var __create = Object.create;
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-
-// src/index.ts
-var index_exports = {};
-__export(index_exports, {
-  Earth: () => Earth_default,
-  Map: () => Map,
-  MapProps: () => Map_default
-});
-module.exports = __toCommonJS(index_exports);
-
-// src/components/Earth/Earth.tsx
-var import_react = require("react");
-var import_d3_geo = require("d3-geo");
-var import_topojson_client = require("topojson-client");
-var import_countries_110m = __toESM(require("world-atlas/countries-110m.json"));
+// src/components/Map/Map.tsx
+import { useEffect, useRef, useState } from "react";
+import { select, zoom } from "d3";
+import { geoPath, geoNaturalEarth1 } from "d3-geo";
+import { feature } from "topojson-client";
 
 // src/const/countryCodes.ts
-var import_i18n_iso_countries = __toESM(require("i18n-iso-countries"));
-var import_en = __toESM(require("i18n-iso-countries/langs/en.json"));
+import countries from "i18n-iso-countries";
+import enLocale from "i18n-iso-countries/langs/en.json";
 try {
-  import_i18n_iso_countries.default.registerLocale(import_en.default);
+  countries.registerLocale(enLocale);
 } catch {
 }
 function deriveCountryKeysFromFeature(countryFeature) {
@@ -56,12 +18,12 @@ function deriveCountryKeysFromFeature(countryFeature) {
   let alpha2;
   let alpha3;
   try {
-    alpha2 = import_i18n_iso_countries.default.numericToAlpha2(numeric3);
+    alpha2 = countries.numericToAlpha2(numeric3);
   } catch {
     alpha2 = void 0;
   }
   try {
-    alpha3 = alpha2 ? import_i18n_iso_countries.default.alpha2ToAlpha3(alpha2) : void 0;
+    alpha3 = alpha2 ? countries.alpha2ToAlpha3(alpha2) : void 0;
   } catch {
     alpha3 = void 0;
   }
@@ -88,8 +50,123 @@ function pickStylesForCountry(countryStyles, derivedKeys) {
   return tryKey(derivedKeys.alpha2) || tryKey(derivedKeys.alpha3) || tryKey(derivedKeys.numeric3) || tryKey(derivedKeys.id) || { fillOpacity: null };
 }
 
+// src/components/Map/Map.tsx
+import worldDataRaw from "world-atlas/countries-110m.json";
+import { jsx, jsxs } from "react/jsx-runtime";
+var Map = ({
+  width = 800,
+  height = 450,
+  landColor = "#ddd",
+  oceanColor = "#f0f0f0",
+  strokeColor = "#000",
+  zoomEnabled = true,
+  panEnabled = true,
+  lineStrong = 0.1,
+  lineStyle = "solid",
+  lineColor = "#000",
+  countryStyles = {},
+  tooltipContent = () => ""
+}) => {
+  const svgRef = useRef(null);
+  const gRef = useRef(null);
+  const [tooltip, setTooltip] = useState({
+    visible: false,
+    x: 0,
+    y: 0,
+    content: ""
+  });
+  useEffect(() => {
+    if (!svgRef.current || !gRef.current) return;
+    const svg = select(svgRef.current);
+    const g = select(gRef.current);
+    if (zoomEnabled || panEnabled) {
+      const zoomBehavior = zoom().on("zoom", (event) => {
+        g.attr("transform", event.transform);
+      });
+      svg.call(zoomBehavior);
+    } else {
+      svg.on(".zoom", null);
+    }
+  }, [zoomEnabled, panEnabled]);
+  const countries2 = feature(
+    worldDataRaw,
+    worldDataRaw.objects.countries
+  ).features;
+  const projection = geoNaturalEarth1().fitSize([width, height], { type: "Sphere" });
+  const pathGenerator = geoPath().projection(projection);
+  return /* @__PURE__ */ jsxs("div", { style: { position: "relative", width, height }, children: [
+    /* @__PURE__ */ jsx(
+      "svg",
+      {
+        ref: svgRef,
+        width,
+        height,
+        style: { border: `${lineStrong}px ${lineStyle} ${lineColor}`, display: "block" },
+        onMouseLeave: () => setTooltip({ ...tooltip, visible: false }),
+        children: /* @__PURE__ */ jsx("g", { ref: gRef, children: countries2.map((country, i) => {
+          const id = country.id || `country-${i}`;
+          const derived = deriveCountryKeysFromFeature(country);
+          const styles = pickStylesForCountry(countryStyles, derived);
+          const name = country.properties?.name || `Country ${id}`;
+          return /* @__PURE__ */ jsx(
+            "path",
+            {
+              d: pathGenerator(country) || "",
+              fill: styles.fill || landColor,
+              fillOpacity: styles.fillOpacity != null ? styles.fillOpacity : 1,
+              stroke: styles.stroke || strokeColor,
+              strokeWidth: styles.strokeWidth || 0.1,
+              onMouseEnter: (e) => setTooltip({
+                visible: true,
+                x: e.clientX,
+                y: e.clientY,
+                content: tooltipContent(name, country)
+              }),
+              onMouseMove: (e) => setTooltip((prev) => ({
+                ...prev,
+                x: e.clientX,
+                y: e.clientY
+              })),
+              onMouseLeave: () => setTooltip((prev) => ({ ...prev, visible: false })),
+              onClick: styles.onClick ? () => {
+                if (styles.onClick) {
+                  styles.onClick(country, name);
+                }
+              } : void 0
+            },
+            id
+          );
+        }) })
+      }
+    ),
+    tooltip.visible && svgRef.current && /* @__PURE__ */ jsx(
+      "div",
+      {
+        style: {
+          position: "absolute",
+          top: tooltip.y - svgRef.current.getBoundingClientRect().top + 10,
+          left: tooltip.x - svgRef.current.getBoundingClientRect().left + 10,
+          background: "rgba(0, 0, 0, 0.7)",
+          color: "#fff",
+          padding: "6px 10px",
+          borderRadius: "4px",
+          pointerEvents: "none",
+          fontSize: "14px",
+          maxWidth: "200px",
+          zIndex: 10
+        },
+        children: tooltip.content
+      }
+    )
+  ] });
+};
+
 // src/components/Earth/Earth.tsx
-var import_jsx_runtime = require("react/jsx-runtime");
+import { useEffect as useEffect2, useRef as useRef2, useState as useState2 } from "react";
+import { geoOrthographic, geoPath as geoPath2 } from "d3-geo";
+import { feature as feature2 } from "topojson-client";
+import worldData from "world-atlas/countries-110m.json";
+import { jsx as jsx2, jsxs as jsxs2 } from "react/jsx-runtime";
 var Earth = ({
   width = 800,
   height = 800,
@@ -104,31 +181,31 @@ var Earth = ({
   tooltipContent = () => "",
   countryStyles = {}
 }) => {
-  const canvasRef = (0, import_react.useRef)(null);
-  const rotationRef = (0, import_react.useRef)([0, -30]);
-  const scaleRef = (0, import_react.useRef)(1);
-  const isDragging = (0, import_react.useRef)(false);
-  const lastPos = (0, import_react.useRef)([0, 0]);
-  const [tooltip, setTooltip] = (0, import_react.useState)({
+  const canvasRef = useRef2(null);
+  const rotationRef = useRef2([0, -30]);
+  const scaleRef = useRef2(1);
+  const isDragging = useRef2(false);
+  const lastPos = useRef2([0, 0]);
+  const [tooltip, setTooltip] = useState2({
     visible: false,
     x: 0,
     y: 0,
     content: ""
   });
-  const [hoveredCountry, setHoveredCountry] = (0, import_react.useState)(
+  const [hoveredCountry, setHoveredCountry] = useState2(
     null
   );
-  (0, import_react.useEffect)(() => {
+  useEffect2(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const context = canvas.getContext("2d");
     if (!context) return;
     const baseScale = height / 2.2;
-    const projection = (0, import_d3_geo.geoOrthographic)().scale(baseScale * scaleRef.current).translate([width / 2, height / 2]).rotate(rotationRef.current);
-    const path = (0, import_d3_geo.geoPath)().projection(projection).context(context);
-    const countries2 = (0, import_topojson_client.feature)(
-      import_countries_110m.default,
-      import_countries_110m.default.objects.countries
+    const projection = geoOrthographic().scale(baseScale * scaleRef.current).translate([width / 2, height / 2]).rotate(rotationRef.current);
+    const path = geoPath2().projection(projection).context(context);
+    const countries2 = feature2(
+      worldData,
+      worldData.objects.countries
     ).features;
     function drawGlobe() {
       if (!context) return;
@@ -299,9 +376,9 @@ var Earth = ({
     countryStyles,
     hoveredCountry
   ]);
-  return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { position: "relative", width, height }, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("canvas", { ref: canvasRef, width, height }),
-    tooltip.visible && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+  return /* @__PURE__ */ jsxs2("div", { style: { position: "relative", width, height }, children: [
+    /* @__PURE__ */ jsx2("canvas", { ref: canvasRef, width, height }),
+    tooltip.visible && /* @__PURE__ */ jsx2(
       "div",
       {
         style: {
@@ -322,126 +399,7 @@ var Earth = ({
     )
   ] });
 };
-var Earth_default = Earth;
-
-// src/components/Map/Map.tsx
-var import_react2 = require("react");
-var import_d3 = require("d3");
-var import_d3_geo2 = require("d3-geo");
-var import_topojson_client2 = require("topojson-client");
-var import_countries_110m2 = __toESM(require("world-atlas/countries-110m.json"));
-var import_jsx_runtime2 = require("react/jsx-runtime");
-var Map = ({
-  width = 800,
-  height = 450,
-  landColor = "#ddd",
-  oceanColor = "#f0f0f0",
-  strokeColor = "#000",
-  zoomEnabled = true,
-  panEnabled = true,
-  lineStrong = 0.1,
-  lineStyle = "solid",
-  lineColor = "#000",
-  countryStyles = {},
-  tooltipContent = () => ""
-}) => {
-  const svgRef = (0, import_react2.useRef)(null);
-  const gRef = (0, import_react2.useRef)(null);
-  const [tooltip, setTooltip] = (0, import_react2.useState)({
-    visible: false,
-    x: 0,
-    y: 0,
-    content: ""
-  });
-  (0, import_react2.useEffect)(() => {
-    if (!svgRef.current || !gRef.current) return;
-    const svg = (0, import_d3.select)(svgRef.current);
-    const g = (0, import_d3.select)(gRef.current);
-    if (zoomEnabled || panEnabled) {
-      const zoomBehavior = (0, import_d3.zoom)().on("zoom", (event) => {
-        g.attr("transform", event.transform);
-      });
-      svg.call(zoomBehavior);
-    } else {
-      svg.on(".zoom", null);
-    }
-  }, [zoomEnabled, panEnabled]);
-  const countries2 = (0, import_topojson_client2.feature)(
-    import_countries_110m2.default,
-    import_countries_110m2.default.objects.countries
-  ).features;
-  const projection = (0, import_d3_geo2.geoNaturalEarth1)().fitSize([width, height], { type: "Sphere" });
-  const pathGenerator = (0, import_d3_geo2.geoPath)().projection(projection);
-  return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { style: { position: "relative", width, height }, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-      "svg",
-      {
-        ref: svgRef,
-        width,
-        height,
-        style: { border: `${lineStrong}px ${lineStyle} ${lineColor}`, display: "block" },
-        onMouseLeave: () => setTooltip({ ...tooltip, visible: false }),
-        children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("g", { ref: gRef, children: countries2.map((country, i) => {
-          const id = country.id || `country-${i}`;
-          const derived = deriveCountryKeysFromFeature(country);
-          const styles = pickStylesForCountry(countryStyles, derived);
-          const name = country.properties?.name || `Country ${id}`;
-          return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-            "path",
-            {
-              d: pathGenerator(country) || "",
-              fill: styles.fill || landColor,
-              fillOpacity: styles.fillOpacity != null ? styles.fillOpacity : 1,
-              stroke: styles.stroke || strokeColor,
-              strokeWidth: styles.strokeWidth || 0.1,
-              onMouseEnter: (e) => setTooltip({
-                visible: true,
-                x: e.clientX,
-                y: e.clientY,
-                content: tooltipContent(name, country)
-              }),
-              onMouseMove: (e) => setTooltip((prev) => ({
-                ...prev,
-                x: e.clientX,
-                y: e.clientY
-              })),
-              onMouseLeave: () => setTooltip((prev) => ({ ...prev, visible: false })),
-              onClick: styles.onClick ? () => {
-                if (styles.onClick) {
-                  styles.onClick(country, name);
-                }
-              } : void 0
-            },
-            id
-          );
-        }) })
-      }
-    ),
-    tooltip.visible && svgRef.current && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-      "div",
-      {
-        style: {
-          position: "absolute",
-          top: tooltip.y - svgRef.current.getBoundingClientRect().top + 10,
-          left: tooltip.x - svgRef.current.getBoundingClientRect().left + 10,
-          background: "rgba(0, 0, 0, 0.7)",
-          color: "#fff",
-          padding: "6px 10px",
-          borderRadius: "4px",
-          pointerEvents: "none",
-          fontSize: "14px",
-          maxWidth: "200px",
-          zIndex: 10
-        },
-        children: tooltip.content
-      }
-    )
-  ] });
-};
-var Map_default = Map;
-// Annotate the CommonJS export names for ESM import in node:
-0 && (module.exports = {
+export {
   Earth,
-  Map,
-  MapProps
-});
+  Map
+};

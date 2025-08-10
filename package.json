@@ -1,14 +1,14 @@
 {
   "name": "@osmn-byhn/map-chart-lib",
   "version": "1.0.2",
-  "main": "dist/index.cjs.js",
+  "main": "dist/index.esm.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --out-dir dist --clean",
+    "build": "tsup src/index.ts --format esm --dts --out-dir dist --clean",
     "dev": "vite",
     "storybook": "storybook dev -p 6006",
     "build:storybook": "storybook build",
@@ -18,7 +18,7 @@
   "keywords": [],
   "author": "",
   "license": "MIT",
-  "type": "commonjs",
+  "type": "module",
   "devDependencies": {
     "@babel/core": "^7.28.0",
     "@babel/preset-env": "^7.28.0",

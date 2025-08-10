@@ -37,7 +37,7 @@ export type EarthProps = {
   >;
 };
 
-const Earth: React.FC<EarthProps> = ({
+export const Earth: React.FC<EarthProps> = ({
   width = 800,
   height = 800,
   landColor = "#4CAF50",
@@ -324,5 +324,3 @@ const Earth: React.FC<EarthProps> = ({
     </div>
   );
 };
-
-export default Earth;

@@ -8,7 +8,7 @@ import { deriveCountryKeysFromFeature, pickStylesForCountry, CountryStylesMap } 
 // JSON import için tsconfig.json'da "resolveJsonModule": true olmalı
 import worldDataRaw from "world-atlas/countries-110m.json";
 
-interface MapProps {
+export interface MapProps {
   width?: number;
   height?: number;
   landColor?: string;
@@ -158,5 +158,3 @@ export const Map: React.FC<MapProps> = ({
     </div>
   );
 };
-
-export default Map;

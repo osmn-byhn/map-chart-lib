@@ -15,7 +15,7 @@
     "noImplicitAny": false,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true
+    "strict": true,
   },
   "include": ["src"]
 }

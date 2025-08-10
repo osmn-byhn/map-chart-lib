@@ -1,2 +1,2 @@
-export * from "./components/Earth";
-export * from "./components/Map";
+export { Map } from "./components/Map";
+export { Earth } from "./components/Earth";
