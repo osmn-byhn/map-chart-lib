@@ -1,0 +1,49 @@
+{
+  "name": "map-chart-lib",
+  "version": "1.0.1",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --out-dir dist --clean",
+    "dev": "vite",
+    "storybook": "storybook dev -p 6006",
+    "build:storybook": "storybook build",
+    "test": "vitest",
+    "lint": "eslint . --ext .ts,.tsx"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.4",
+    "@testing-library/react": "^16.3.0",
+    "@types/react": "^19.1.9",
+    "@types/react-dom": "^19.1.7",
+    "@storybook/addon-essentials": "^8.6.14",
+    "@storybook/addon-interactions": "^8.6.14",
+    "@storybook/addon-links": "^8.6.14",
+    "@storybook/react-webpack5": "^8.6.14",
+    "@storybook/react-vite": "^8.6.14",
+    "storybook": "^8.6.14",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.1",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "d3": "^7.9.0",
+    "d3-geo": "^3.1.1",
+    "geojson": "^0.5.0",
+    "i18n-iso-countries": "^7.14.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "topojson-client": "^3.1.0",
+    "world-atlas": "^2.0.2"
+  }
+}
