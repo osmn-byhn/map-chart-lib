@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { select, zoom } from "d3";
 import { geoPath, geoNaturalEarth1 } from "d3-geo";
 import { feature } from "topojson-client";
@@ -42,7 +42,7 @@ export const Map: React.FC<MapProps> = ({
   lineStyle = "solid",
   lineColor = "#000",
   countryStyles = {},
-  tooltipContent = () => "",
+  tooltipContent = (name: any, country: Feature) => "",
 }) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const gRef = useRef<SVGGElement | null>(null);
@@ -101,7 +101,7 @@ export const Map: React.FC<MapProps> = ({
                 d={pathGenerator(country as Feature<Geometry>) || ""}
                 fill={styles.fill || landColor}
                 fillOpacity={styles.fillOpacity != null ? styles.fillOpacity : 1.0}
-                stroke={styles.stroke || strokeColor}
+                 stroke={styles.stroke || strokeColor}
                 strokeWidth={styles.strokeWidth || 0.1}
                 onMouseEnter={(e) =>
                   setTooltip({
