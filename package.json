@@ -1,6 +1,6 @@
 {
   "name": "@osmn-byhn/map-chart-lib",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "dist/index.esm.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
