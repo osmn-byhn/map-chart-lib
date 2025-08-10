@@ -1,0 +1,21 @@
+name: Publish
+on:
+  push:
+    tags:
+      - 'v*'
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - name: Install
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
