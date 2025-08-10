@@ -1,6 +1,6 @@
 {
-  "name": "@osmn-byhn/map-chart-lib",
-  "version": "1.0.4",
+  "name": "map-chart-lib",
+  "version": "1.0.3",
   "main": "dist/index.esm.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
@@ -50,12 +50,5 @@
     "react-dom": "^19.1.1",
     "topojson-client": "^3.1.0",
     "world-atlas": "^2.0.2"
-  },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/osmn-byhn/map-chart-lib.git"
   }
 }
