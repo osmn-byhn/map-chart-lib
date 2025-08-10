@@ -65,7 +65,7 @@ var Map = ({
   lineStyle = "solid",
   lineColor = "#000",
   countryStyles = {},
-  tooltipContent = () => ""
+  tooltipContent = (name, country) => ""
 }) => {
   const svgRef = useRef(null);
   const gRef = useRef(null);

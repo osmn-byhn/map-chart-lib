@@ -1,4 +1,3 @@
-import React from 'react';
 import * as GeoJSON from 'geojson';
 import { Feature } from 'geojson';
 
